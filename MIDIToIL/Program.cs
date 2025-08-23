@@ -1,5 +1,4 @@
 ﻿using NAudio.Midi;
-using System.Text;
 
 namespace MIDIToIL
 {

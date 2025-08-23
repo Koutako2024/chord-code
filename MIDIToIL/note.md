@@ -1,7 +1,7 @@
 ﻿# Note
 
 ## TODO
-
+* fix output to match IL spec.
 
 ## 言語仕様
 
