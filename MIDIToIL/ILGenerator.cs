@@ -24,7 +24,7 @@ namespace MIDIToIL
 
             List<List<List<string>>> structedNotes = MakeList(groupedNotes);
 
-            WriteIL(outputFilePath, groupedNotes);
+            WriteIL(outputFilePath, structedNotes);
         }
 
         private List<List<string>> GroupSameMomentEvents(List<NoteOnEvent> noteOnEvents)
@@ -34,7 +34,7 @@ namespace MIDIToIL
             {
                 List<string> group = new();
                 group.Add(noteOnEvents[i].NoteName);
-                for (k = 1; i + k < noteOnEvents.Count && IsSameGroup(noteOnEvents[i + k - 1], noteOnEvents[i + k]); k++)
+                for (k = 1; i + k < noteOnEvents.Count && IsSameMoment(noteOnEvents[i + k - 1], noteOnEvents[i + k]); k++)
                 {
                     group.Add(noteOnEvents[i + k].NoteName);
                 }
@@ -67,22 +67,28 @@ namespace MIDIToIL
             return structedNotes;
         }
 
-        private bool IsSameGroup(NoteOnEvent a, NoteOnEvent b)
+        private bool IsSameMoment(NoteOnEvent a, NoteOnEvent b)
         {
             return b.AbsoluteTime - a.AbsoluteTime < lagTickToAllow;
         }
 
-        private static void WriteIL(string OutputFilePath, List<List<string>> groupedNotes)
+        private static void WriteIL(string OutputFilePath, List<List<List<string>>> structedNotes)
         {
             using (StreamWriter writer = new(OutputFilePath, false, Encoding.UTF8))
             {
-                for (int i = 0; i < groupedNotes.Count; i++)
+                foreach (var line in structedNotes)
                 {
-                    string chord = string.Join("", groupedNotes[i][..^1]);
-                    writer.WriteLine($"{chord}\t|{groupedNotes[i][^1]}");
+                    string chord = string.Join("", line[0][..^1]);
+
+                    StringBuilder melody = new();
+                    foreach (var group in line)
+                    {
+                        melody.Append(group[^1]);
+                    }
+
+                    writer.WriteLine($"{chord}\t|{melody}");
                 }
             }
         }
-
     }
 }
