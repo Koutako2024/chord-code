@@ -1,13 +1,9 @@
 ﻿using NAudio.Midi;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace MIDIToIL
 {
-    internal class ILGenerator
+    public class ILGenerator
     {
         private int lagTickToAllow;
 
@@ -24,12 +20,14 @@ namespace MIDIToIL
                 .Where(e => e.Velocity > 0)
                 .ToList();
 
-            List<List<string>> groupedNotes = GroupNoteOnEvents(noteOnEvents);
+            List<List<string>> groupedNotes = GroupSameMomentEvents(noteOnEvents);
+
+            List<List<List<string>>> structedNotes = MakeList(groupedNotes);
 
             WriteIL(outputFilePath, groupedNotes);
         }
 
-        private List<List<string>> GroupNoteOnEvents(List<NoteOnEvent> noteOnEvents)
+        private List<List<string>> GroupSameMomentEvents(List<NoteOnEvent> noteOnEvents)
         {
             List<List<string>> groupedNotes = new();
             for (int i = 0, k; i < noteOnEvents.Count; i += k)
@@ -43,6 +41,30 @@ namespace MIDIToIL
                 groupedNotes.Add(group);
             }
             return groupedNotes;
+        }
+
+        private List<List<List<string>>> MakeList(List<List<string>> groupedNotes)
+        {
+            List<List<List<string>>> structedNotes = new();
+
+            int j;
+            for (int i = 0; i < groupedNotes.Count; i += j)
+            {
+                //List<List<string>> currentStruct = new();
+
+
+                for (j = 1; i + j < groupedNotes.Count; j++)
+                {
+                    if (groupedNotes[i + j].Count > 1)
+                    {
+                        break;
+                    }
+                }
+
+                structedNotes.Add(groupedNotes[i..(i + j)]);
+            }
+
+            return structedNotes;
         }
 
         private bool IsSameGroup(NoteOnEvent a, NoteOnEvent b)
